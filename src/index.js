@@ -1,35 +1,44 @@
-// Import Lodash using CommonJS syntax
 const _ = require('lodash');
 
-// Sample input string
 const input = "   JavaScript   ";
 
-// Traditional approach (non-functional)
 const output = `<div>${input.trim()}</div>`;
 console.log("Traditional output:", output);
 
-// Define individual operations as pure functions
-const trim = str => str.trim();
 const wrapInDiv = str => `<div>${str}</div>`;
+const wrapInSpan = str => `<span>${str}</span>`;
 const toLowerCase = str => str.toLowerCase();
 
-// Example of function composition (functional way)
-// Read from right-to-left: trim, then wrap in div, then convert to lowercase
-const resultV1 = toLowerCase(wrapInDiv(trim(input)));
-console.log("Result V1 (manual composition):", resultV1);
+// wrapInDiv() and wrapInSpan() are almost identical, it'd be nice if we can parameterize
+// these functions
+// const wrap = (type, str) => `<${type}>${str}</${type}>`;
+const wrap = type => str => `<${type}>${str}</${type}>`;
 
-// COMPOSING
-// Using flowRight() from Lodash
-// flowRight() combines functions from right to left (last to first)
-const composition = _.flowRight(toLowerCase, wrapInDiv, _.trim);
-console.log("Result V2 (using compose):", composition(input));
+const transform = _.flow(_.trim, wrap("div"), toLowerCase);
+console.log("Result :", transform(input));
 
-// PIPING
-// Using flow() equivalent from Lodash
-// flow() combines functions from left to right, improving readability
-const transform = _.flow(_.trim, wrapInDiv, toLowerCase);
-console.log("Result V3 (using flow):", transform(input));
+// line 18's output with the commented wrap() is:
+// <javascript>undefined</javascript>
+// why?
 
-// Demonstrating the reusability of our composed functions
-const anotherInput = "   FUNCTIONAL PROGRAMMING   ";
-console.log("Processing another input:", transform(anotherInput));
+// The _.flow() creates a function that passes the result of each function to the next. In this case,
+// the functions are:
+// 1. _.trim which takes a string and returns it trimmed.
+// 2. Wrap which is defined as (type, str) => `<${type}>${str}</${type}>`.
+// 3. toLowerCase which converts a string to lower case.
+// Each function in the chain receives exactly one argument—the output of the previous function.
+
+// Your wrap() is designed to take two arguments: a tag type and a string. However, when used in _.flow, it is only receiving one argument. Here’s the sequence:
+// 1. The input " JavaScript " is passed to _.trim which returns "JavaScript".
+// 2. That trimmed result ("JavaScript") is passed to wrap() as the first argument. Since wrap expects two parameters, this means:
+//          type becomes "JavaScript".
+//          The second parameter str is undefined because it was not provided.
+// 3. So, wrap("JavaScript", undefined) returns <JavaScript>undefined</JavaScript>.
+// Finally, toLowerCase is applied, giving <javascript>undefined</javascript>.
+// This is why you see <javascript>undefined</javascript> as the final output.
+
+// What we need in the .flow() pipeline is a function with a single parameter.
+// We can use currying for this (currying.js).
+
+// On line 17, when you call wrap('div'), the curried function returns a new function waiting for one argument (the string to wrap).
+// So wrap('div')("JavaScript") produces <div>JavaScript</div>.
