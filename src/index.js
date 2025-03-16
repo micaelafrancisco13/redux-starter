@@ -1,25 +1,8 @@
-// In JS, functions are treated as first-class citizens
+// higher-order functions are functions that take a function as an argument or return it
+// examples: map() and setTimeout()
 
-// Meaning:
+const numbers = [1, 2, 3, 4, 5];
+const numbersDoubled = numbers.map((number) => number * 2);
+console.log("numbersDoubled", numbersDoubled);
 
-// a) they can be assigned to a variable
-function sayHello() {
-    return "Hello World!";
-}
-
-const greet1 = sayHello;
-console.log("Greet 1", greet1());
-
-// b) they can be passed as an argument to a function
-function greet2(greet) {
-    console.log("Greet 2", greet());
-}
-
-greet2(sayHello);
-
-// c) they can be returned from a function
-function greet3() {
-    return sayHello();
-}
-
-console.log("Greet 3", greet3());
+setTimeout(() => console.log("Hello World!"), 3000);
