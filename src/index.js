@@ -1,8 +1,14 @@
-// higher-order functions are functions that take a function as an argument or return it
-// examples: map() and setTimeout()
+// non-functional way
+const input = "   JavaScript   ";
+const output = `<div>${input.trim()}</div>`;
 
-const numbers = [1, 2, 3, 4, 5];
-const numbersDoubled = numbers.map((number) => number * 2);
-console.log("numbersDoubled", numbersDoubled);
+// example of function composition (functional way)
+const trim = str => str.trim();
+const wrapInDiv = str => `<div>${str}</div>`;
+const toLowerCase = str => str.toLowerCase();
 
-setTimeout(() => console.log("Hello World!"), 3000);
+// read is from right-to-left
+// reading complexity due to the existence of parentheses
+const result = toLowerCase(wrapInDiv(trim(input)));
+
+console.log("Result is", result);
