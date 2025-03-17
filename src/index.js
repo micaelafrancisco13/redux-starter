@@ -1,37 +1,48 @@
-// Define an initial "person" object with a nested "address" property.
-const person = {
-    name: "John",
-    address: {
-        country: "United States",
-        city: "New York",
-    }
+// Import the produce helper function from Immer.
+// Using Immer allows us to safely write "mutative" code that results
+// in immutable updates to our state.
+import { produce } from 'immer';
+
+// Define a book object with nested properties.
+const book = {
+    title: "Harry Potter",
+    author: {
+        name: "J.K. Rowling"
+    },
+    isPublished: false
 };
 
-// Create a shallow copy of the "person" object using the spread operator,
-// while updating the "name" property to "Bob".
-// Note: This operation only creates a new top-level object; nested objects (like "address")
-// still reference the same memory location as in the original "person" object.
-const updatedPerson = { ...person, name: "Bob" };
+/**
+ * Publishes a book by updating its state immutably.
+ *
+ * This function uses Immer's produce() to create a new version of the book object.
+ * The "draft" provided to the recipe function is mutable, meaning we can change
+ * its properties directly. However, Immer ensures that these changes are applied
+ * immutably, leaving the original book unchanged.
+ *
+ * @param {Object} book - The original book object to update.
+ * @returns {Object} A new book object with updated properties.
+ */
+function publish(book) {
+    // Define a mutation function (often called a "recipe") that receives a mutable copy (draft)
+    // of the book. Within this function, we can safely mutate the draft object.
+    const mutation = draftBook => {
+        // Mark the book as published.
+        draftBook.isPublished = true;
+        // Update the author's name.
+        draftBook.author.name = "Joanne Rowling";
+    };
 
-// Changing a property on a nested object will affect both copies because they share the same reference.
-// Here, modifying "address.city" on "updatedPerson" also changes it for "person".
-updatedPerson.address.city = "San Francisco";
-console.log("Original person", person);
-// Expected behavior: The original person's city should remain "New York".
-// Actual behavior: It shows "San Francisco" because of the shallow copy.
+    // Call produce() with the original book and the mutation function.
+    // produce() returns a new object that incorporates the changes from the draft,
+    // while leaving the original object unmodified.
+    return produce(book, mutation);
+}
 
-// To avoid this, we need to create a deep copy.
-// A deep copy duplicates all nested objects so that each object is completely independent.
-const newPerson = {
-    ...person,         // Copy all top-level properties from "person".
-    name: "Bob",       // Override the "name" property.
-    address: {         // Create a new independent copy of the "address" object.
-        ...person.address, // Copy all properties of the original address.
-        // Optionally, you can update specific properties here.
-        // For this example, we explicitly keep the city as "New York"
-        // to demonstrate that modifying the new object doesn't affect the original.
-        city: "New York"
-    }
-};
-console.log("New person", newPerson);
-// Now, even if you later modify newPerson.address, the original person.address remains unchanged.
+// Create an updated version of the book by publishing it.
+const updatedBook = publish(book);
+
+// Output the original and updated book details.
+// The original book remains unchanged due to the immutability guarantee of Immer.
+console.log("Original book", book);
+console.log("Updated book", updatedBook);
