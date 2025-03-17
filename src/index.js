@@ -1,44 +1,52 @@
-const _ = require('lodash');
+// IMPURE FUNCTION EXAMPLE
+// ------------------------------------------------------
+// This function is considered impure because it produces different
+// results even when given the same input.
+// It relies on Math.random(), which introduces an unpredictable element.
+function myFunction(number) {
+    return number * Math.random();
+}
 
-const input = "   JavaScript   ";
+// PURE FUNCTION EXAMPLE
+// ------------------------------------------------------
+// A pure function always returns the same result when given the same input,
+// and it does not produce any side effects.
+// The function below always returns the result of number multiplied by 2,
+// regardless of any external state.
+function multiplyByTwo(number) {
+    return number * 2;
+}
 
-const output = `<div>${input.trim()}</div>`;
-console.log("Traditional output:", output);
+// GUIDELINES FOR PURE FUNCTIONS
+// ------------------------------------------------------
+// When writing pure functions, you should avoid:
+//   - Using random values (e.g., Math.random())
+//   - Relying on the current date or time
+//   - Accessing or modifying global state (e.g., DOM elements, files, databases)
+//   - Mutating the input parameters
+//
+// Note: Although functional programming encourages writing pure functions,
+// not every function in an application must be pure.
+// For example, Redux reducers are required to be pure.
 
-const wrapInDiv = str => `<div>${str}</div>`;
-const wrapInSpan = str => `<span>${str}</span>`;
-const toLowerCase = str => str.toLowerCase();
+// IMPURE FUNCTION DEPENDING ON EXTERNAL STATE
+// ------------------------------------------------------
+// This function checks if a given age is greater than a global variable 'minAge'.
+// Because it depends on an external variable, its result may change if 'minAge'
+// is modified elsewhere in your code, making the function impure.
+function isEligible(age) {
+    return age > minAge;
+}
 
-// wrapInDiv() and wrapInSpan() are almost identical, it'd be nice if we can parameterize
-// these functions
-// const wrap = (type, str) => `<${type}>${str}</${type}>`;
-const wrap = type => str => `<${type}>${str}</${type}>`;
-
-const transform = _.flow(_.trim, wrap("div"), toLowerCase);
-console.log("Result :", transform(input));
-
-// line 18's output with the commented wrap() is:
-// <javascript>undefined</javascript>
-// why?
-
-// The _.flow() creates a function that passes the result of each function to the next. In this case,
-// the functions are:
-// 1. _.trim which takes a string and returns it trimmed.
-// 2. Wrap which is defined as (type, str) => `<${type}>${str}</${type}>`.
-// 3. toLowerCase which converts a string to lower case.
-// Each function in the chain receives exactly one argument—the output of the previous function.
-
-// Your wrap() is designed to take two arguments: a tag type and a string. However, when used in _.flow, it is only receiving one argument. Here’s the sequence:
-// 1. The input " JavaScript " is passed to _.trim which returns "JavaScript".
-// 2. That trimmed result ("JavaScript") is passed to wrap() as the first argument. Since wrap expects two parameters, this means:
-//          type becomes "JavaScript".
-//          The second parameter str is undefined because it was not provided.
-// 3. So, wrap("JavaScript", undefined) returns <JavaScript>undefined</JavaScript>.
-// Finally, toLowerCase is applied, giving <javascript>undefined</javascript>.
-// This is why you see <javascript>undefined</javascript> as the final output.
-
-// What we need in the .flow() pipeline is a function with a single parameter.
-// We can use currying for this (currying.js).
-
-// On line 17, when you call wrap('div'), the curried function returns a new function waiting for one argument (the string to wrap).
-// So wrap('div')("JavaScript") produces <div>JavaScript</div>.
+// TRANSFORMING AN IMPURE FUNCTION TO A PURE FUNCTION
+// ------------------------------------------------------
+// To make the function pure, we should remove any dependency on external state.
+// In this revised version, 'minAge' is passed as a parameter, ensuring that:
+//   - **Self-documenting:** All required data is explicitly provided as function parameters.
+//   - **Easily testable:** There is no dependency on global state when testing the function.
+//   - **Concurrency-safe:** The function does not depend on or modify shared state.
+//   - **Cacheable (Memoizable):** Repeated calls with the same arguments will always yield
+//     the same result, enabling caching for performance.
+function isEligible(age, minAge) {
+    return age > minAge;
+}
